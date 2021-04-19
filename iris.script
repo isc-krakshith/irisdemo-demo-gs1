@@ -1,0 +1,100 @@
+; run installer to create namespace
+do $SYSTEM.OBJ.Load("/opt/epcis/Installer.cls", "ck")
+set sc = ##class(App.Installer).setup() 
+new $namespace
+set namespace = "EPCIS"
+set $namespace=namespace
+set app = $System.CSP.GetDefaultApp(namespace) _ "/"
+;do EnableDeepSee^%SYS.cspServer(app)
+
+zn "%SYS"
+Do ##class(Security.Users).UnExpireUserPasswords("*")
+
+; create rest application
+set webName = "/epcis"
+write "Create rest application ",webName,!
+set webProperties("DispatchClass") = "EPCIS.intersystems.RestService" 
+set webProperties("NameSpace") = namespace
+set webProperties("Enabled") = 1
+set webProperties("PasswordAuthEnabled") = 0
+set webProperties("UnauthenticatedEnabled") = 1
+set webProperties("MatchRoles") = ":%All"
+set status = ##class(Security.Applications).Create(webName, .webProperties)
+write !,"Web application "_webName_" has been created!"
+
+; create rest application
+set webName = "/query"
+write "Create rest application ",webName,!
+set webProperties("DispatchClass") = "EPCIS.intersystems.AppRestService" 
+set webProperties("NameSpace") = namespace
+set webProperties("Enabled") = 1
+set webProperties("PasswordAuthEnabled") = 0
+set webProperties("UnauthenticatedEnabled") = 1
+set webProperties("MatchRoles") = ":%All"
+set status = ##class(Security.Applications).Create(webName, .webProperties)
+write !,"Web application "_webName_" has been created!"
+
+; create rest application
+set webName = "/subscriber"
+write "Create rest application ",webName,!
+set webProperties("DispatchClass") = "EPCIS.intersystems.SubscriberStreamService" 
+set webProperties("NameSpace") = namespace
+set webProperties("Enabled") = 1
+set webProperties("PasswordAuthEnabled") = 0
+set webProperties("UnauthenticatedEnabled") = 1
+set webProperties("MatchRoles") = ":%All"
+set status = ##class(Security.Applications).Create(webName, .webProperties)
+write !,"Web application "_webName_" has been created!"
+
+; create rest application
+set webName = "/epcisuser/api"
+write "Create rest application ",webName,!
+set webProperties("DispatchClass") = "EPCIS.intersystems.LocatorService" 
+set webProperties("NameSpace") = namespace
+set webProperties("Enabled") = 1
+set webProperties("PasswordAuthEnabled") = 0
+set webProperties("UnauthenticatedEnabled") = 1
+set webProperties("MatchRoles") = ":%All"
+set status = ##class(Security.Applications).Create(webName, .webProperties)
+write !,"Web application "_webName_" has been created!"
+
+; create rest application
+set webName = "/query"
+write "Create rest application ",webName,!
+set webProperties("DispatchClass") = "EPCIS.intersystems.AppRestService" 
+set webProperties("NameSpace") = namespace
+set webProperties("Enabled") = 1
+set webProperties("PasswordAuthEnabled") = 0
+set webProperties("UnauthenticatedEnabled") = 1
+set webProperties("MatchRoles") = ":%All"
+set status = ##class(Security.Applications).Create(webName, .webProperties)
+write !,"Web application "_webName_" has been created!"
+
+; create rest application
+set webName = "/passthrough"
+write "Create rest application ",webName,!
+set webProperties("DispatchClass") = "EnsLib.REST.GenericService" 
+set webProperties("NameSpace") = namespace
+set webProperties("Enabled") = 1
+set webProperties("PasswordAuthEnabled") = 0
+set webProperties("UnauthenticatedEnabled") = 1
+set webProperties("MatchRoles") = ":%All"
+set status = ##class(Security.Applications).Create(webName, .webProperties)
+write !,"Web application "_webName_" has been created!"
+
+
+
+; create rest application
+set webName = "/csp/epcisuser/epcis"
+write "Create rest application ",webName,!
+set webProperties("DispatchClass") = "EPCIS.intersystems.RestService" 
+set webProperties("NameSpace") = "USER"
+set webProperties("Enabled") = 1
+set webProperties("PasswordAuthEnabled") = 0
+set webProperties("UnauthenticatedEnabled") = 1
+set webProperties("MatchRoles") = ":%All"
+set status = ##class(Security.Applications).Create(webName, .webProperties)
+write !,"Web application "_webName_" has been created!"
+
+; call your initial methods here
+halt
