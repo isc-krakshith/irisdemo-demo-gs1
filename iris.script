@@ -1,6 +1,7 @@
 ; run installer to create namespace
 do $SYSTEM.OBJ.Load("/opt/epcis/Installer.cls", "ck")
 set sc = ##class(App.Installer).setup() 
+
 new $namespace
 set namespace = "EPCIS"
 set $namespace=namespace
@@ -9,6 +10,8 @@ set app = $System.CSP.GetDefaultApp(namespace) _ "/"
 
 zn "%SYS"
 Do ##class(Security.Users).UnExpireUserPasswords("*")
+;assign %All role to UnknownUser
+Do ##class(Security.Users).AddRoles("UnknownUser",("%All"))
 
 ; create rest application
 set webName = "/epcis"
@@ -82,10 +85,8 @@ set webProperties("MatchRoles") = ":%All"
 set status = ##class(Security.Applications).Create(webName, .webProperties)
 write !,"Web application "_webName_" has been created!"
 
-
-
 ; create rest application
-set webName = "/csp/epcisuser/epcis"
+set webName = "/csp/user/epcis"
 write "Create rest application ",webName,!
 set webProperties("DispatchClass") = "EPCIS.intersystems.RestService" 
 set webProperties("NameSpace") = "USER"
@@ -95,6 +96,10 @@ set webProperties("UnauthenticatedEnabled") = 1
 set webProperties("MatchRoles") = ":%All"
 set status = ##class(Security.Applications).Create(webName, .webProperties)
 write !,"Web application "_webName_" has been created!"
+
+
+do $SYSTEM.OBJ.Load("/opt/epcis/InstallerUserNS.cls", "ck")
+set sc = ##class(App.InstallerUserNS).setup() 
 
 ; call your initial methods here
 halt
