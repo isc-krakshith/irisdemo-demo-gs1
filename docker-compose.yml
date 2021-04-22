@@ -12,3 +12,4 @@ services:
     volumes:
       - ~/iris.key:/usr/irissys/mgr/iris.key
       - ./:/irisdev/app
+      - ./src/hl7msg/in:/opt/epcis/hl7msg/in
