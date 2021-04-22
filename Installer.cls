@@ -29,11 +29,6 @@ XData setup
                  
     />
   </Namespace>
-
-  <Namespace Name="${UserNamespace}" Code="${UserNamespace}" Data="${UserNamespace}" Create="no" Ensemble="0">
-
-    <Import File="${UserSourceDir}" Flags="ck" Recurse="1"/>
-  </Namespace>
 </Manifest>
 }
 
