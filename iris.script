@@ -130,8 +130,19 @@
     set ^EPCIS.intersystems.GLNI("fnCodeIndex"," RK90023",5055238905240) = ""
     set ^EPCIS.intersystems.GLNI("fnCodeIndex"," RK95034",50552084000950346) = ""
 
-    ;start production
+    ;setup foundation Health namespace
+    zn "HSLIB"
+    set status = ##class(HS.HC.Util.Installer).InstallFoundation("EPCIS")
+    ;install FHIR in namespace
     zn "EPCIS"
+    do ##class(HS.FHIRServer.Installer).InstallNamespace("EPCIS")
+    ;install FHIR instance
+    set appKey = "/MyFHIRApp/fhir/r4"
+    set strategyClass = "HS.FHIRServer.Storage.Json.InteractionsStrategy"
+    set metadataConfigKey = "HL7v40"
+    do ##class(HS.FHIRServer.Installer).InstallInstance(appKey, strategyClass, metadataConfigKey)
+
+    ;start production
     set production = "EPCIS.intersystems.Production"
     set ^Ens.Configuration("csp","LastProduction") = production
     do ##class(Ens.Director).SetAutoStart(production)
