@@ -52,7 +52,7 @@ XData ProductionDefinition
   <Item Name="EnsLib.Workflow.Operation" Category="" ClassName="EnsLib.Workflow.Operation" PoolSize="1" Enabled="true" Foreground="false" Comment="" LogTraceEvents="false" Schedule="">
     <Setting Target="Host" Name="AutoCreateRole">1</Setting>
   </Item>
-  <Item Name="EPCIS Publish Process" Category="" ClassName="EPCIS.intersystems.PublishProcess" PoolSize="1" Enabled="true" Foreground="false" Comment="" LogTraceEvents="false" Schedule="">
+  <Item Name="EPCIS Publish Process" Category="" ClassName="EPCIS.intersystems.PublishProcess" PoolSize="1" Enabled="false" Foreground="false" Comment="" LogTraceEvents="false" Schedule="">
   </Item>
   <Item Name="EPCIS Notify Process" Category="" ClassName="EPCIS.intersystems.NotifyProcess" PoolSize="1" Enabled="true" Foreground="false" Comment="" LogTraceEvents="false" Schedule="">
   </Item>
