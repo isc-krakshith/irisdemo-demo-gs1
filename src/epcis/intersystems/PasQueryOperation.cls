@@ -18,7 +18,7 @@ Method GetDemographics(pRequest As EPCIS.intersystems.PasRequest, Output pRespon
 		if $isobject(tSDA) {
 			set tPatient=tSDA.Patient
 			set tResponse=##class(HS.FHIR.DTL.vSTU3.Model.Resource.Patient).%New()
-			set tSC=##class(HS.Local.FHIR.DTL.SDA3.vSTU3.Patient.Patient).Transform(tPatient,.tResponse)
+			set tSC=##class(EPCIS.intersystems.FHIR.DTL.SDA3.vSTU3.Patient.Patient).Transform(tPatient,.tResponse)
 			if $isobject(tResponse) {
 				set tStream=tResponse.ToJSON()
 				set pResponse.Patient=tStream
@@ -26,7 +26,7 @@ Method GetDemographics(pRequest As EPCIS.intersystems.PasRequest, Output pRespon
 			
 		}
 	}
-	Quit tSC
+	Quit $$$OK
 }
 
 XData MessageMap
