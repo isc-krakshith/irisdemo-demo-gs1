@@ -1,6 +1,6 @@
 #ARG IMAGE=intersystemsdc/irishealth-community:2020.4.0.547.0
-#ARG IMAGE=store/intersystems/irishealth-community:2020.4.0.547.0
-ARG IMAGE=docker.iscinternal.com/intersystems/irishealth:2020.4.0-latest
+ARG IMAGE=store/intersystems/irishealth-community:2020.4.0.547.0
+#ARG IMAGE=docker.iscinternal.com/intersystems/irishealth:2020.4.0-latest
 FROM $IMAGE
 
 USER root
