@@ -6,17 +6,30 @@ XData UrlMap [ XMLNamespace = "http://www.intersystems.com/urlmap" ]
 <Routes>
       <Route Url="/encounter" Method="GET" Call="FHIRbundle"/>
      <Route Url="/activitydefinition" Method="GET" Call="FHIRbundle"/>
-     <Route Url="/demoStep1" Method="GET" Call="DemoGenerateAdmit"/>
+     <Route Url="/demoStep1" Method="POST" Call="DemoGenerateAdmit"/>
      <Route Url="/demoStep2" Method="GET" Call="DemoLinkDocument"/>
      <Route Url="/demoStep3" Method="GET" Call="DemoSpellId"/>
      <Route Url="/demoStep4" Method="GET" Call="DemoPatientLocation"/>
      <Route Url="/demoStep5" Method="GET" Call="DemoDispense"/>
      <Route Url="/demoStep6" Method="GET" Call="DemoLocationFriendlyName"/>
      <Route Url="/demoStep7" Method="GET" Call="DemoFHIR"/>
-     <Route Url="/demoStep8" Method="GET" Call="DemoGenerateDischarge"/>
+     <Route Url="/demoStep8" Method="POST" Call="DemoGenerateDischarge"/>
 
    </Routes>
 }
+
+Parameter HTTP422UNPROCESSABLEENTITY As %String = "422 Unprocessible Entity";
+
+/*===========================================================
+// Allow Cross Origin scripting request
+// or else front-end may not be able to receive response
+// resulting in errors like this: 
+// Cross-Origin Request Blocked: The Same Origin Policy
+// disallows reading the remote resource at 
+// http://localhost:52773/query
+// (Reason: CORS header 'Access-Control-Allow-Origin' missing).
+============================================================*/
+Parameter HandleCorsRequest = 1;
 
 ClassMethod FHIRbundle() As %Status
 {
@@ -89,41 +102,72 @@ ClassMethod CopyToEpcisDocumentFromJSON(doc As EPCIS.epcis.EPCISDocumentType, ob
 	quit tSC
 }
 
+ClassMethod GeneratePAS() As %String
+{
+	return "F10105"_^DEMO_"^^^^PAS~"_(1111111111*^DEMO)_"^^^^NHS"
+}
+
 ClassMethod DemoGenerateAdmit() As %Status
 {
 	set tSC=$$$OK
-	set tP=$increment(^DEMO)
-	
+	do $increment(^DEMO)
+	if ^DEMO=10 set ^DEMO=1
+	set tP = ^DEMO
+
+	// lets unpack the JSON object
+	set data = ##class(%DynamicObject).%FromJSON(%request.Content)
+	set FirstName = data.firstName
+	set LastName = data.lastName
+	set MRN = data.mrn //currently not used
+	set Date = data.date //currently not used
+	set PAS = ..GeneratePAS()
+
 	set tDT=$zstrip($ZD($H,8),"*P")
 	set MSH="MSH|^~\&|PAS|RK9|LSP|RK9|"_tDT_"105725|BRIDGER2|ADT^A01|987654321|P|2.4|||"
 	set EVN="EVN||"_tDT_"105725||||"_tDT_"0500"
-	set PID="PID|1||F10105"_tP_"^^^^PAS~"_(1111111111*tP)_"^^^^NHS||Smith^John^^^MR||20000115|M|||5344 test St , Brest Rd, Plymouth^^^^PL6 5YE^NSP^HOME^^QD4||01752 444444^PHONE||NSP^Not Specified|S|7B|||||L|270|NSP||8||||N||PD1|||Abernethy House,70 Silver Street,Enfield,Middlesex,EN1 3EP^GPPRC^F85029^^^^^5558|G3346563^Yeo^ER^^^DR^^^^^6015||"
+	set PID="PID|1||"_PAS_"||"_LastName_"^"_FirstName_"^^^MR||20000115|M|||5344 test St , Brest Rd, Plymouth^^^^PL6 5YE^NSP^HOME^^QD4||01752 444444^PHONE||NSP^Not Specified|S|7B|||||L|270|NSP||8||||N||PD1|||Abernethy House,70 Silver Street,Enfield,Middlesex,EN1 3EP^GPPRC^F85029^^^^^5558|G3346563^Yeo^ER^^^DR^^^^^6015||"
 	set PV1="PV1|1|I|RK95034^^68^Derriford Hospital\T\RK950\T\HOSPT^^WARD^^^Monkswell Ward, Zone E, Level 10|2|||||5197018^Hussain^S A^^^DR^^413^^^175195|370||||1||||01|357327"_tP_"|||||1|||||||||||||||86|||||"_tDT_"050000|||||test|488274"_tP_"^394333"_tP_"^1168896"_tP
 	set tPath=##class(Ens.Director).GetAdapterSettingValue("HL7 Test Service","FilePath")
-	set tFile=##class(%File).%New(tPath_"\test"_tP_".hl7")
+	set tFile=##class(%File).%New(tPath_"/test"_tP_".hl7")
 	do tFile.Open("WSN")
 	set tSC=tFile.WriteLine(MSH_$c(13,10)_EVN_$c(13,10)_PID_$c(13,10)_PV1)
 	
-	if ^DEMO=9 kill ^DEMO
-	quit tSC
+
+	//return PAS
+	set jsonPAS = {}
+	set jsonPAS.PAS = PAS
+    write jsonPAS.%ToJSON()
+	return tSC
 }
 
 ClassMethod DemoGenerateDischarge() As %Status
 {
 	set tSC=$$$OK
 	set tP=^DEMO
+
+	// lets unpack the JSON object
+	set data = ##class(%DynamicObject).%FromJSON(%request.Content)
+	set FirstName = data.firstName
+	set LastName = data.lastName
+	set MRN = data.mrn //currently not used
+	set Date = data.date //currently not used
+	set PAS = ..GeneratePAS()
 	
 	set tDT=$zstrip($ZD($H,8),"*P")
 	set MSH="MSH|^~\&|PAS|RK9|LSP|RK9|"_tDT_"105725|BRIDGER2|ADT^A03|987654323|P|2.4|||"
 	set EVN="EVN||"_tDT_"105725||||"_tDT_"0900"
-	set PID="PID|1||F10105"_tP_"^^^^PAS~"_(1111111111*tP)_"^^^^NHS||Smith^John^^^MR||20000115|M|||5344 test St , Brest Rd, Plymouth^^^^PL6 5YE^NSP^HOME^^QD4||01752 444444^PHONE||NSP^Not Specified|S|7B|||||L|270|NSP||8||||N||PD1|||Abernethy House,70 Silver Street,Enfield,Middlesex,EN1 3EP^GPPRC^F85029^^^^^5558|G3346563^Yeo^ER^^^DR^^^^^6015||"
+	set PID="PID|1||"_PAS_"||"_LastName_"^"_FirstName_"^^^MR||20000115|M|||5344 test St , Brest Rd, Plymouth^^^^PL6 5YE^NSP^HOME^^QD4||01752 444444^PHONE||NSP^Not Specified|S|7B|||||L|270|NSP||8||||N||PD1|||Abernethy House,70 Silver Street,Enfield,Middlesex,EN1 3EP^GPPRC^F85029^^^^^5558|G3346563^Yeo^ER^^^DR^^^^^6015||"
 	set PV1="PV1|1|I|RK95034^^68^Derriford Hospital\T\RK950\T\HOSPT^^WARD^^^Monkswell Ward, Zone E, Level 10|2|||||5197018^Hussain^S A^^^DR^^413^^^175195|370||||1||||01|3573274|||||1|||||||||||||||86|||||"_tDT_"090000|||||test|488274"_tP_"^394333"_tP_"^1168896"_tP
 	set tPath=##class(Ens.Director).GetAdapterSettingValue("HL7 Test Service","FilePath")
-	set tFile=##class(%File).%New(tPath_"\test"_tP_".hl7")
+	set tFile=##class(%File).%New(tPath_"/test"_tP_".hl7")
 	do tFile.Open("WSN")
 	set tSC=tFile.WriteLine(MSH_$c(13,10)_EVN_$c(13,10)_PID_$c(13,10)_PV1)
 	
-	quit tSC
+	//return PAS
+	set jsonPAS = {}
+	set jsonPAS.PAS = PAS
+    write jsonPAS.%ToJSON()
+	return tSC
 }
 
 ClassMethod DemoLinkDocument() As %Status
@@ -265,7 +309,7 @@ ClassMethod DemoDispense() As %Status
 	quit tSC
 }
 
-ClassMethod DemoLocationFriendly() As %Status
+ClassMethod DemoLocationFriendlyName() As %Status
 {
 	set tSC=$$$OK
 	set tRequest=##class(%Net.HttpRequest).%New()
