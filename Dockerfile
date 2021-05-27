@@ -16,8 +16,10 @@ USER ${ISC_PACKAGE_MGRUSER}
 
 COPY  Installer.cls .
 COPY InstallerUserNS.cls .
+COPY InstallerHSLIBNS.cls .
 COPY  src/epcis /opt/epcis/epcis
 COPY  src/user /opt/epcis/user
+COPY src/hslib /opt/epcis/hslib
 COPY  src/hl7msg /opt/epcis/hl7msg
 
 COPY iris.script /tmp/iris.script

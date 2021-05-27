@@ -99,7 +99,7 @@
 
 
     do $SYSTEM.OBJ.Load("/opt/epcis/InstallerUserNS.cls", "ck")
-    set sc = ##class(App.InstallerUserNS).setup() 
+    set sc = ##class(App.InstallerUserNS).setup()
 
     ; call your initial methods here
 
@@ -129,6 +129,15 @@
 
     set ^EPCIS.intersystems.GLNI("fnCodeIndex"," RK90023",5055238905240) = ""
     set ^EPCIS.intersystems.GLNI("fnCodeIndex"," RK95034",50552084000950346) = ""
+
+    zn "%SYS"
+    ; make enslib RW
+    s db=##Class(SYS.Database).%OpenId("/usr/irissys/mgr/enslib")
+    s db.ReadOnly=0
+    d db.%Save()
+
+    do $SYSTEM.OBJ.Load("/opt/epcis/InstallerHSLIBNS.cls", "ck")
+    set sc = ##class(App.InstallerHSLIBNS).setup()
 
     ;setup foundation Health namespace
     zn "HSLIB"
