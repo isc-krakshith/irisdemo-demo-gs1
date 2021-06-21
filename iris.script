@@ -97,6 +97,19 @@
     set status = ##class(Security.Applications).Create(webName, .webProperties)
     write !,"Web application "_webName_" has been created!"
 
+    ;enable api/iam application
+    set appName = "/api/iam"
+    do ##class(Security.Applications).Get(appName, .appProperties)
+    set appProperties("Enabled")=1
+    do ##class(Security.Applications).Modify(appName, .appProperties)
+
+    ;enable IAM user
+    set userName = "IAM"
+    set userPW = "IAMUSER"
+    do ##class(Security.Users).Get(username, .userProperties)
+    set userProperties("PasswordExternal")=userPW
+    set userProperties("Enabled")=1
+    do ##class(Security.Users).Modify(userName, .userProperties)
 
     do $SYSTEM.OBJ.Load("/opt/epcis/InstallerUserNS.cls", "ck")
     set sc = ##class(App.InstallerUserNS).setup()
